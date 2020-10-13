@@ -19,6 +19,17 @@ struct readings_t {
     float hysteresis_temperature;
 } readings;
 
+
+pthread_mutex_t temp_readings_mutex;
+pthread_cond_t temp_readings_cond;
+int temp_readings_flag;
+
+pthread_mutex_t potentiometer_readings_mutex;
+pthread_cond_t potentiometer_readings_cond;
+
+pthread_mutex_t control_mutex;
+pthread_cond_t control_cond;
+
 enum ReferenceModes active_selection_mode;
 
 void init_mutex();

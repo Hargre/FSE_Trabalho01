@@ -17,6 +17,12 @@ void *update_terminal_readings(void *mutex) {
     start_lcd_display();
 
     while (1) {
+        pthread_mutex_lock(&temp_readings_mutex);
+        while (!temp_readings_flag) {
+            pthread_cond_wait(&temp_readings_cond, &temp_readings_mutex);
+        }
+        pthread_mutex_unlock(&temp_readings_mutex);
+
         get_internal_temperature();
         get_external_temperature();
 
@@ -46,7 +52,11 @@ void *update_terminal_readings(void *mutex) {
         update_lcd_display();
         refresh();
         pthread_mutex_unlock((pthread_mutex_t *)mutex);
-        usleep(500000);
+
+        pthread_mutex_lock(&temp_readings_mutex);
+        temp_readings_flag = 0;
+        pthread_cond_signal(&temp_readings_cond);
+        pthread_mutex_unlock(&temp_readings_mutex);
     }
     return NULL;
 }
