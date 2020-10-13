@@ -24,8 +24,9 @@ pthread_mutex_t temp_readings_mutex;
 pthread_cond_t temp_readings_cond;
 int temp_readings_flag;
 
-pthread_mutex_t potentiometer_readings_mutex;
-pthread_cond_t potentiometer_readings_cond;
+pthread_mutex_t logs_mutex;
+pthread_cond_t logs_cond;
+int logs_flag;
 
 pthread_mutex_t control_mutex;
 pthread_cond_t control_cond;

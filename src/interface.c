@@ -26,6 +26,10 @@ void *update_terminal_readings(void *mutex) {
         get_internal_temperature();
         get_external_temperature();
 
+        if (active_selection_mode == Potentiometer) {
+            get_potentiometer_reference_temperature();
+        }
+
         setup_gpio();
         pthread_mutex_lock(&uart_mutex);
         if (readings.internal_temperature < readings.ref_temp - readings.hysteresis_temperature) {
@@ -55,7 +59,6 @@ void *update_terminal_readings(void *mutex) {
 
         pthread_mutex_lock(&temp_readings_mutex);
         temp_readings_flag = 0;
-        pthread_cond_signal(&temp_readings_cond);
         pthread_mutex_unlock(&temp_readings_mutex);
     }
     return NULL;
@@ -76,9 +79,17 @@ void *update_reference_reading() {
 }
 
 void *log_readings() {
+
     while(1) {
+        pthread_mutex_lock(&logs_mutex);
+        while (!logs_flag) {
+            pthread_cond_wait(&logs_cond, &logs_mutex);
+        }
+        pthread_mutex_unlock(&logs_mutex);
         save_readings_log();
-        sleep(2);
+        pthread_mutex_lock(&logs_mutex);
+        logs_flag = 0;
+        pthread_mutex_unlock(&logs_mutex);
     }
 }
 

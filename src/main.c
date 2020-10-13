@@ -36,11 +36,21 @@ void sighandler(int signum) {
 int log_counter = 0;
 
 void alarmhandler(int sigalarm) {
+    log_counter++;
+
     pthread_mutex_lock(&temp_readings_mutex);
     temp_readings_flag = 1;
     pthread_cond_signal(&temp_readings_cond);
     pthread_mutex_unlock(&temp_readings_mutex);
-    ualarm(500000);
+
+    if (log_counter == 4) {
+        log_counter = 0;
+        pthread_mutex_lock(&logs_mutex);
+        logs_flag = 1;
+        pthread_cond_signal(&logs_cond);
+        pthread_mutex_unlock(&logs_mutex);
+    }
+    ualarm(500000, 0);
 }
 
 
@@ -56,9 +66,13 @@ int main() {
 
     pthread_mutex_t mut;
     temp_readings_flag = 0;
+    logs_flag = 0;
     pthread_mutex_init(&mut, NULL);
     pthread_mutex_init(&temp_readings_mutex, NULL);
     pthread_cond_init(&temp_readings_cond, NULL);
+
+    pthread_mutex_init(&logs_mutex, NULL);
+    pthread_cond_init(&logs_cond, NULL);
 
     active_selection_mode = Potentiometer;
     readings.hysteresis_temperature = DEFAULT_HYSTERESIS;
@@ -71,7 +85,7 @@ int main() {
     pthread_create(&potentiometer_reading, NULL, update_reference_reading, NULL);
     pthread_create(&log_update, NULL, log_readings, NULL);
 
-    ualarm(500000);
+    ualarm(500000, 0);
 
     in = getch();
     while (in != '0') {
@@ -93,7 +107,6 @@ int main() {
             break;
         case '2':
             if (active_selection_mode == TerminalSelect) {
-                pthread_create(&potentiometer_reading, NULL, update_reference_reading, NULL);
                 pthread_mutex_lock(&mut);
                 active_selection_mode = Potentiometer;
                 show_menu(active_selection_mode);
