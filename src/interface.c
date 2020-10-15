@@ -64,20 +64,6 @@ void *update_terminal_readings(void *mutex) {
     return NULL;
 }
 
-void potentiometer_readings_cleanup_handler(void *args) {
-    pthread_mutex_unlock(&uart_mutex);
-}
-
-void *update_reference_reading() {
-    pthread_cleanup_push(potentiometer_readings_cleanup_handler, NULL);
-    while(1) {
-        get_potentiometer_reference_temperature();
-        usleep(500000);
-    }
-    pthread_cleanup_pop(1);
-    return NULL;
-}
-
 void *log_readings() {
 
     while(1) {

@@ -82,7 +82,6 @@ int main() {
     show_menu(Potentiometer);
 
     pthread_create(&temp_reading, NULL, update_terminal_readings, &mut);
-    pthread_create(&potentiometer_reading, NULL, update_reference_reading, NULL);
     pthread_create(&log_update, NULL, log_readings, NULL);
 
     ualarm(500000, 0);
@@ -93,10 +92,6 @@ int main() {
         {
         case '1':
             pthread_mutex_lock(&mut);
-            if (active_selection_mode == Potentiometer) {
-                pthread_cancel(potentiometer_reading);
-                pthread_join(potentiometer_reading, &pthread_return);
-            }
             erase();
             mvprintw(2, 0, "Insira o valor de referência:");
             refresh();
